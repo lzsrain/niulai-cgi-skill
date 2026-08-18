@@ -1,72 +1,45 @@
 # niulai-cgi-skill
 
-把图像、游戏地图、角色、UI 或任何视觉资产重制成 **「牛来」(NiuLai) 廉价 CGI 风格**
-的 WorkBuddy 技能 —— 即 2000 年代初国产低成本 3D 动画电影那种刻意"做不好"的渲染
-（刻意"做不好"的早期廉价三维动画那种味道：平面着色的低多边形、破比例、穿模、硬阴影、
-明亮平涂塑料感配色、无抗锯齿）。
+把原创图片、角色、场景和小红书配图重制成刻意简陋的早期低成本 CGI 风格。
 
-低质量必须来自**生产能力本身**（建模 / 比例 / 绑定 / 材质 / 灯光 / 渲染），而不是
-后期滤镜（像素化、模糊、VHS、噪点、暗调）。
+核心原则：廉价感来自粗糙建模、比例、绑定、材质和灯光，而不是模糊、噪点、VHS 或像素化滤镜。
 
-> **灵感说明**：风格概念受 [`TanShilongMario/NiuLai-Skill`](https://github.com/TanShilongMario/NiuLai-Skill)
-> 启发。该仓库**未附带许可证**，本仓库**仅将其作为概念参考**；本仓库内所有提示词、
-> 预设与工作流均为独立撰写，并基于真实生成输出校准。本仓库以 **MIT** 许可证开源。
+## 适用场景
 
-## 适用范围与版权
+- “把这张图牛来化”
+- 生成廉价早期 CGI 风格角色或场景
+- 生成小红书 3:4 竖版封面和正文配图
+- 改造 `pixel-city-walk` 等 Canvas 项目中的视觉资产
 
-- **风格本身可自由使用**：平面着色、破比例、硬阴影、可数贴图等是通用的"生产能力"
-  美学特征，不属于任何单一作品的版权。
-- **不要生成或克隆具体有版权的角色、吉祥物或品牌资产**（例如具名的卡通动画 IP）。
-  请只把本风格用在**原创、自有或明确无版权争议**的题材上。
-- 本技能描述的是"早期低成本 3D 动画"这一**时代与技术特征**，而非任何特定受版权
-  保护的作品。
+## 稳定性改进
 
-## 这个技能包含什么
+- 有参考图时优先编辑参考图，工具不支持时才退回文生图。
+- 场景、角色和小红书封面分别验收，不再要求每张图满足同一组特征。
+- 小红书图默认生成无字底图，中文标题后置排版，避免乱码。
+- 不写死图片 API、输出尺寸、操作系统和本地工具。
+- 不提供规避平台 AI 内容标识的操作。
 
-- **核心审美定义**：七条不可妥协的"破味"信号（逐面纯色平面着色、无抗锯齿、水为平涂
-  色块、可数 16×16 贴图、单硬光源+硬阴影、破比例穿模、明亮平涂塑料配色）。
-- **命名预设**：`sunlit_game_map`（建筑/地图/场景）、`character`（角色/动物）。
-- **实战 ImageGen 提示词（v4，已验证）**：直接可用，含绝对不能漏的四条负面约束。
-- **工具环境坑与绕过**：图生图 `image` 数组被拒 → 纯文生图 + 编号锁布局；
-  "AI生成 WORKBUDDY" 水印用 ffmpeg 盖除；`sips` 缩放；模型无法看图时用数值校验。
-- **pixel-city-walk 案例**：把纯前端 Canvas 城市漫游游戏牛来化的完整四块改造
-  （地图 / UI / 角色 / 明信片）、`uiMode` 隔离、TDZ 白屏坑、绿幕角色 + `npc.scale`、
-  明信片场景图生成。
+## 目录
 
-## 目录结构
-
-```
+```text
 niulai-cgi-skill/
-├── SKILL.md                      # 触发条件、工作流、质量门槛
-├── LICENSE                       # MIT
-├── README.md
+├── SKILL.md
+├── agents/openai.yaml
 └── references/
-    ├── style-system.md           # 审美支柱 + 命名预设 + 反向质量门槛
-    ├── prompt-blueprint.md       # v4 实战提示词 + 负面约束 + 工具环境坑
-    └── pixel-city-walk-case.md   # pixel-city-walk 四块改造案例
+    ├── style-system.md
+    ├── prompt-blueprint.md
+    ├── xiaohongshu.md
+    └── pixel-city-walk-case.md
 ```
 
-## 安装（作为 WorkBuddy 技能）
+## 安装
 
-把整个 `niulai-cgi-skill/` 目录放入 WorkBuddy 的技能目录：
+把整个目录放入支持 `SKILL.md` 的技能目录并刷新客户端。不同客户端的技能路径和图片工具能力可能不同，请以其当前文档为准。
 
-- 用户级（跨项目）：`~/.workbuddy/skills/niulai-cgi-skill/`
-- 项目级（团队协作）：`<项目>/.workbuddy/skills/niulai-cgi-skill/`
+## 知识产权
 
-重启/刷新 WorkBuddy 后，当对话出现"牛来化""做成牛来风格""trash-tier 2005 CGI"
-等意图时会自动触发。
-
-## 何时用
-
-- "把这张图牛来化" / "做成那种廉价 3D 渲染"
-- 把地图、插画、角色精灵、UI 重做成平面着色低多边形廉价 3D
-- 把 `pixel-city-walk` 这类 2D Canvas 游戏整体牛来化
-
-## 相关
-
-- 落地案例仓库：[`lzsrain/pixel-city-walk`](https://github.com/lzsrain/pixel-city-walk)
-- 概念来源（无许可证，仅参考）：[`TanShilongMario/NiuLai-Skill`](https://github.com/TanShilongMario/NiuLai-Skill)
+本 Skill 描述通用制作技术和时代质感。请仅处理原创、自有或已获授权的主体，不要克隆具体受版权保护的角色、商标或品牌资产。
 
 ## License
 
-[MIT](./LICENSE) © 2026 lzsrain
+MIT © 2026 lzsrain

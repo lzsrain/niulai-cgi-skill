@@ -1,96 +1,79 @@
-# 实战 ImageGen 提示词与工具环境 (prompt-blueprint)
+# 牛来风格提示词蓝图
 
-本文件提供**经过真实输出校准**的牛来提示词模板、负面约束，以及本环境下的
-工具坑与绕过办法。直接照抄即可，不要"概括"成笼统的 "make it crude"——笼统
-描述会回到干净 low-poly。
+把模板中的方括号替换为用户内容。提示词描述目标，不描述某个工具的参数格式。
 
-## 一、`sunlit_game_map` 场景 / 地图提示词（v4，已验证出廉价 CGI 效果）
+## 参考图编辑模板
 
-```
-Trash-tier 2005 mainland-China CGI animated film, first unpolished keyframe.
-A flat 3D Chinese city in Jinan. CRUDE STYLE — every polygon face is ONE solid
-color, NO gradient, NO smooth shading, NO specular, NO transparency, NO
-reflections. NO anti-aliasing — every edge is jagged and stepped. 2-bit
-pixel-art texture look stretched over walls (you can COUNT the 16x16 noisy
-repeating bricks). Single hard sun upper-right throwing solid black blob
-shadows. Flat pale-grey sky band, no gradient. Layout: (a) LEFT — a blocky
-mountain made of solid-color stacked triangles with hard creases; (b)
-CENTER-LEFT — a chunky solid-cobalt-blue flat-shaded human statue on a stone
-square (NO water columns, NO transparent water); (c) CENTER — three small
-flat-blue stone circles as spring pools, no water inside; (d) UPPER-RIGHT — a
-flat solid-pale-teal RECTANGLE for the lake (NOT transparent, NOT reflective,
-just a flat shape) with two small arched stone bridges and a tiny pagoda
-silhouette on it; (e) BOTTOM-RIGHT — a flat-grey canal with two small stone
-bridges and a wall with a stone tiger-head spout. Buildings have visible
-flat-shaded green/grey tiled roofs and the 16x16 brick wallpapers. Bright flat
-pastel colors: cobalt blue, faded red, ochre, pale teal, peachy beige. NO text,
-NO humans except the statue, NO UI, NO watermarks anywhere. Looks like 3ds Max
-first render before any cleanup, by a poor studio.
+```text
+Edit the provided image while preserving the main subject, subject count,
+camera direction, silhouette, and key layout. Restyle it as an intentionally
+under-produced early-2000s low-budget CGI render: coarse low-poly geometry,
+visible flat color facets, cheap matte plastic materials, slightly awkward
+proportions, minor rigging or intersection flaws, one hard directional light,
+and simple hard-edged shadows. Keep the subject recognizable. Avoid polished
+PBR, cinematic lighting, realistic reflections, glossy luxury materials,
+heavy noise, blur, VHS effects, pixel-art filters, text, logos, and extra
+characters.
 ```
 
-要点：(a)(b)(c)(d)(e) **编号锁死布局**——ImageGen 文生图构图会漂移，把"哪里放什
-么"用编号明确定位比纯描述稳得多。
+## 场景文生图模板
 
-## 二、`character` 角色提示词（绿幕，便于抠图）
-
-```
-Trash-tier 2005 mainland-China CGI animated film character: a chubby cartoon
-COW baby (牛宝) standing, 3/4 view, simple rounded body, tiny stub horns, big
-round but half-lidded sleepy eyes, flat pastel colors (cream body, faded
-pink/red accents). FLAT-SHADED with ONE solid color per face, NO gradient, NO
-specular, NO anti-aliasing (jagged edges), NO PBR. Solid black blob shadow
-under feet. Standing on a PURE GREEN SCREEN background (#00ff00), full body
-centered, lots of empty green around the character for easy keying. NO text, NO
-watermark.
+```text
+Create [场景内容] as an intentionally under-produced early-2000s low-budget
+CGI scene. Use coarse low-poly buildings, visible flat-color facets, cheap
+matte plastic materials, slightly broken proportions, a few reused assets,
+one hard directional light, and hard-edged shadows. Composition: [左侧内容]；
+[中央主体]；[右侧内容]。Use a simple pale sky and restrained background.
+Keep every named landmark readable and preserve the requested count. Avoid
+polished PBR, cinematic lighting, realistic water, reflections, soft bloom,
+heavy noise, blur, text, logos, UI, and extra people.
 ```
 
-角色视角用 **3/4 斜俯视**，与地图的 oblique 视角一致，否则人物和地图"不在同一个
-世界"。
+只有场景确实包含水或墙面时，才追加：
 
-## 三、绝对不能漏的负面约束（四条）
-
-漏任意一条都会退化回干净 low-poly：
-- `NO transparency`（否则水会变透明、有反光）
-- `NO anti-aliasing`（保留锯齿硬边）
-- `16x16 noisy repeating bricks you can COUNT`（贴图信号）
-- `flat black blob shadows`（硬阴影）
-
-## 四、工具环境坑与绕过
-
-### 图生图（image-to-image）在本环境实际不可用
-ImageGen 的 `image` 参数声明为数组（1–3 项），但**当前实现即使传
-`image: ["http://..."]` 也会被校验器拒**，报 `/image: must be array`。
-**绕过办法**：放弃图生图，**纯文生图 + 在 prompt 里用 `(a)(b)(c)` 编号锁死布局**。
-构图漂移就用编号压制。如果将来接口修好，图生图本地 URL 形式应为
-`["http://127.0.0.1:8088/path.png"]`（本机需先 `python -m http.server` 起静态
-服务）。
-
-### 水印处理
-ImageGen 默认在右下角加 "AI生成 WORKBUDDY" 角标（约 160×60 / 1408×704，或
-220×72 / 1600×800）。用 ffmpeg 盖掉：
-```bash
-ffmpeg -y -i in.png -vf "drawbox=x=1180:y=624:w=220:h=72:color=<周围色>:t=fill" \
-  -frames:v 1 out.png -loglevel error
+```text
+Render water as an opaque flat color shape. Use visibly repeating low-resolution
+diffuse brick textures on walls.
 ```
-`color` 取角标周围的颜色（运河墙灰绿等），让补块融进去。按实际图尺寸比例调
-x/y/w/h。
 
-### 尺寸与缩放
-- ImageGen `size:"1600x800"` 实际返回 **1408×704**（内部按 2:1 缩放）。水印坐标
-  按实际尺寸算。
-- 没有 ImageMagick；ffmpeg 无 `posterize`；macOS 用 `sips` 做缩放/格式转换：
-  ```bash
-  sips -z 1024 1536 in.png --out out.png   # 注意 sips 先高后宽
-  ```
-  把非标准尺寸拉伸回引擎要求的世界尺寸（如 1536×1024），以保坐标对齐。
+## 角色模板
 
-### 肉眼校验限制
-本环境下模型自身无法看图，是否"像牛来"最终由用户判定。用数值工具替代肉眼：
-- `sips -g pixelWidth -g pixelHeight` 查尺寸；
-- Pillow 算角色图"内容占比"（绿幕留白多→要紧裁，否则屏上人物偏小）；
-- 让用户看浏览器实际效果。
+```text
+Create one full-body [角色描述], [视角和动作]. Use a continuous readable
+silhouette with visibly coarse low-poly facets, cheap matte plastic colors,
+slightly awkward head-to-body proportions, mildly stiff posing, imperfect
+rigging, and one hard directional light. Keep the face and identity clear.
+Background: [transparent if supported / a single contrasting key color].
+Leave comfortable space around the body. Avoid puppet joints, voxel blocks,
+photorealistic fur, giant eyeballs, extra limbs, text, logos, and extra props.
+```
 
-## 五、输出规则
-- 构图按需求编号定位；配色用上述明亮平涂塑料色。
-- 渲染标 "first unpolished keyframe before any cleanup"。
-- 不含文字 / UI / 水印（即便 prompt 写了，仍可能被动加角标，需 ffmpeg 兜底）。
+## 提示词控制原则
+
+- 每张图只定义一个主体目标和一个构图目标。
+- 负面约束保留 6–10 项；过长的全大写禁令容易稀释主体信息。
+- 对数量敏感时明确写 `exactly one`、`exactly three`，生成后仍要查看验证。
+- 参考图编辑时优先说“必须保持什么”，不要只罗列风格形容词。
+- 不要求图像模型准确生成中文标题。先生成留白底图，再用排版工具添加文字。
+
+## 失败修正短句
+
+只追加与本轮问题相关的短句，不要整段重写：
+
+- 太精致：`Make the geometry coarser and the materials cheaper; remove glossy PBR and cinematic lighting.`
+- 主体变形：`Restore the original silhouette, subject count, facing direction, and key landmarks.`
+- 构图漂移：`Keep [主体] centered in the upper-middle safe area; keep the lower 15% visually quiet.`
+- 太脏太暗：`Use brighter flat colors and a clean pale background; remove noise, vignette, blur, and dark grading.`
+- 信息太多：`Remove secondary props and background characters; keep one focal subject.`
+
+## 输出验证
+
+生成后检查：
+
+1. 主体、数量、方向和构图是否正确。
+2. 是否呈现简陋 CGI，而不是精致 low-poly 或像素/VHS 滤镜。
+3. 是否存在多余文字、Logo、肢体或主体。
+4. 尺寸和比例是否符合最终用途。
+5. 需要标题时，留白区是否足够。
+
+失败时保留正确部分，每轮只针对最严重的 1–2 项编辑。
