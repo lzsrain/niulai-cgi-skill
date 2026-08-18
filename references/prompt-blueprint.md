@@ -4,7 +4,7 @@
 工具坑与绕过办法。直接照抄即可，不要"概括"成笼统的 "make it crude"——笼统
 描述会回到干净 low-poly。
 
-## 一、`sunlit_game_map` 场景 / 地图提示词（v4，已验证出"猪猪侠级"效果）
+## 一、`sunlit_game_map` 场景 / 地图提示词（v4，已验证出廉价 CGI 效果）
 
 ```
 Trash-tier 2005 mainland-China CGI animated film, first unpolished keyframe.

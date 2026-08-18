@@ -1,6 +1,6 @@
 ---
 name: niulai-cgi-skill
-description: 'This skill should be used when a user wants to restyle images, game maps, characters, UI, or any visual asset into the "牛来" (NiuLai) aesthetic — the deliberately cheap, early-2000s mainland-China CGI look seen in low-budget 3D animated films (think 猪猪侠 / 果宝特攻 first seasons: flat-shaded low-poly geometry, broken proportions, visible clipping/poke-through, hard baked shadows, flat plastic pastel colors, no anti-aliasing). Triggers include "牛来化", "make it look like a trash-tier 2005 CGI render", "restyle as cheap bootleg 3D", or applying this style to a specific project such as pixel-city-walk. Contains battle-tested ImageGen prompts, the sunlit_game_map preset for architecture/maps, tool-environment workarounds (image-to-image schema bug, watermark removal), and a full pixel-city-walk engine-modification case study.'
+description: 'This skill should be used when a user wants to restyle images, game maps, characters, UI, or any visual asset into the "牛来" (NiuLai) aesthetic — the deliberately cheap, early-2000s bargain-bin 3D-animation render look (flat-shaded low-poly geometry, broken proportions, visible clipping/poke-through, hard baked shadows, flat plastic pastel colors, no anti-aliasing). Triggers include "牛来化", "make it look like a trash-tier 2005 CGI render", "restyle as cheap bootleg 3D", or applying this style to a specific project such as pixel-city-walk. Contains battle-tested ImageGen prompts, the sunlit_game_map preset for architecture/maps, tool-environment workarounds (image-to-image schema bug, watermark removal), and a full pixel-city-walk engine-modification case study.'
 agent_created: true
 ---
 
@@ -19,9 +19,20 @@ license; it is used here only as a conceptual reference). All prompts,
 presets, and workflows in this skill are independently written and
 battle-tested against real generated outputs.
 
+## Scope & IP safety
+
+- The **style** (flat-shaded low-poly, broken proportions, hard shadows,
+  countable textures) is a generic production-pipeline aesthetic — free to
+  describe and reproduce.
+- **Do NOT** generate or clone specific copyrighted characters, mascots, or
+  brand assets (e.g. named cartoon franchises). Apply the look only to
+  **original, owned, or clearly non-copyrighted subjects**.
+- This skill references the *era/technique* of early-2000s low-budget 3D
+  animation, not any particular copyrighted title.
+
 ## When to use
 
-- User says "牛来化", "做成牛来风格", or wants the 猪猪侠 / 果宝特攻 cheap-CGI look.
+- User says "牛来化", "做成牛来风格", or wants a bargain-bin cheap-CGI 3D look.
 - Restyling a map, illustration, character sprite, or UI into flat-shaded
   low-poly cheap 3D.
 - Applying the look to the `pixel-city-walk` engine (map / UI / character /
