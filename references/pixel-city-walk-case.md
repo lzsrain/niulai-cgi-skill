@@ -13,22 +13,20 @@
 ### 1. 地图（世界背景）
 - ImageGen 文生图，套 `sunlit_game_map` 预设（粗几何/破比例/穿模/粗糙贴图/单光源/
   廉价渲染）。构图尽量贴原 `map.png`。
-- 若输出非 1536×1024，用 `sips -z 1024 1536` 拉伸保坐标对齐。
+- 若输出比例不同，先等比缩放再居中裁切到 1536×1024；不要直接拉伸主体。
 
 ### 2. UI 牛来化
 - `city.json` 加 `"uiMode":"crude"` → `engine.js` 的 `applyCity` 给 `<body>` 加
   `.niulai-ui` class → `css/style.css` 末尾加 `.niulai-ui` 规则：
   - 硬边 `border-radius:0`、粗黑描边 `border-width:4px`、硬投影
     `box-shadow:6px 6px 0 rgba(0,0,0,.45)`；
-  - 全局无衬线；扫描线加强（如 `repeating-linear-gradient` opacity 提到 ~.11）；
-  - 可选：整屏 SVG `feTurbulence` 颗粒（`mix-blend-mode:multiply`，opacity ~.16）+
-    全局 `contrast(1.06) saturate(1.15) hue-rotate(-4deg)` 色偏脏化。
-- **不要**再用 Canvas 像素化/posterize 滤镜——那产出的是像素艺术，不是牛来。
+  - 全局无衬线；保持高对比、清晰层级，不添加扫描线、颗粒或全局色偏滤镜。
+- 不要用 Canvas 像素化、posterize、模糊或噪点滤镜制造牛来感。
 
 ### 3. 角色（向导小人）
-- 文生图生成牛来小人，**纯绿幕 `#00ff00` 背景**便于抠图，视角 3/4 斜俯视（与地图
-  一致）。
-- `engine.js` 新增 `loadCrudeSprite()`：在浏览器 Canvas 把绿幕抠成透明。
+- 优先生成透明背景牛来小人，视角 3/4 斜俯视（与地图一致）。若工具不支持透明
+  输出，再使用与角色颜色不冲突的纯色背景，并用带容差和去色溢出的抠图实现处理。
+- `engine.js` 仅在需要纯色背景抠图时新增 `loadCrudeSprite()`；不要只匹配单一 RGB 值。
 - `drawPlayer` 改**单图绘制**（去掉逐帧精灵表）：
   ```js
   const spriteW = 24*sc/camera.zoom, spriteH = 48*sc/camera.zoom;
@@ -45,7 +43,7 @@
   ；`engine.js` 在 applyCity 的 crude 分支 `postcardImage.src = absUrl(c.postcard.scene)`。
 - `drawCrudePostcard(g, card)` 必须 **`drawImage(postcardImage)` 到内框区域**
   （如 x:36..w-36, y:128..650），否则中间一大片空白；再叠 `overlayPostcardTexture`
-  （暖色 wash + 8px 条状颗粒 + 顶部 vignette + 3 条横向划痕）做老相纸 / 廉价印刷感。
+  （可选的轻微暖色 wash）统一色调。不要用重颗粒、暗角和划痕替代 CGI 风格本身。
 - 程序化米黄底 + 粗黑双框（14px 外 + 4px 内错位）+ 红色 banner「牛来·<城市>漫游」
   白字。
 
@@ -71,7 +69,7 @@
 cities/niulai-jinan/
   city.json        # 含 uiMode:crude, npc.scale, postcard.scene
   map.png          # 牛来风地图（ImageGen 出）
-assets/character/niulai-guide.png   # 绿幕牛宝（紧裁后 704×1408）
+assets/character/niulai-guide.png   # 透明背景牛宝（紧裁后约 1:2）
 assets/postcard/niulai-jinan-scene.png  # 牛来风合成图（明信片大画板）
 css/style.css      # 末尾 .niulai-ui 规则
 js/engine.js       # applyCity/TDZ 修复 + loadCrudeSprite + drawCrudePostcard

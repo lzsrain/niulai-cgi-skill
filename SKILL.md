@@ -1,87 +1,50 @@
 ---
 name: niulai-cgi-skill
-description: 'This skill should be used when a user wants to restyle images, game maps, characters, UI, or any visual asset into the "牛来" (NiuLai) aesthetic — the deliberately cheap, early-2000s bargain-bin 3D-animation render look (flat-shaded low-poly geometry, broken proportions, visible clipping/poke-through, hard baked shadows, flat plastic pastel colors, no anti-aliasing). Triggers include "牛来化", "make it look like a trash-tier 2005 CGI render", "restyle as cheap bootleg 3D", or applying this style to a specific project such as pixel-city-walk. Contains battle-tested ImageGen prompts, the sunlit_game_map preset for architecture/maps, tool-environment workarounds (image-to-image schema bug, watermark removal), and a full pixel-city-walk engine-modification case study.'
-agent_created: true
+description: 将原创图片、角色、场景和社交媒体配图重制成“牛来”廉价早期 CGI 风格。用户提到“牛来化”“廉价 3D”“早期国产低成本 CGI”，或需要生成小红书牛来风封面、正文配图、竖版海报时使用。支持参考图编辑与纯文生图回退，并按场景、角色、小红书版式分别验收。
 ---
 
-# 牛来 CGI Stylizer (niulai-cgi-skill)
+# 牛来 CGI 风格化
 
-## Purpose
+把低质量建立在建模、比例、材质、灯光和绑定上，而不是依赖模糊、噪点、VHS 或像素化滤镜。
 
-Restyle any visual into the **"牛来" (NiuLai) cheap-CGI aesthetic**: a
-deliberately under-produced early-2000s Chinese 3D-animation look. The low
-quality must come from the *production pipeline* itself — modeling, proportions,
-rigging, materials, lighting, rendering — **not** from post filters (pixelation,
-blur, VHS, noise, dark grading, JPEG artifacts).
+## 工作流
 
-Concept inspired by `TanShilongMario/NiuLai-Skill` (that repository ships no
-license; it is used here only as a conceptual reference). All prompts,
-presets, and workflows in this skill are independently written and
-battle-tested against real generated outputs.
+1. 先确认产物类型：场景、角色、小红书封面或小红书正文配图。
+2. 用户提供参考图时，优先调用当前环境可用的图片编辑能力保持主体和构图；只有工具不支持参考图时才退回纯文生图。
+3. 按产物读取对应参考：
+   - 场景或角色：读取 `references/style-system.md` 和 `references/prompt-blueprint.md`。
+   - 小红书配图：额外读取 `references/xiaohongshu.md`。
+   - 仅在改造 `pixel-city-walk` 时读取 `references/pixel-city-walk-case.md`。
+4. 一次只生成一个明确构图。不要把封面、内页、角色透明图塞进同一提示词。
+5. 生成后实际查看图片，按对应预设验收。最多修正两轮；每轮只修最明显的 1–2 个问题。
+6. 交付图片并简短说明尺寸、用途和仍存在的偏差。
 
-## Scope & IP safety
+## 通用风格信号
 
-- The **style** (flat-shaded low-poly, broken proportions, hard shadows,
-  countable textures) is a generic production-pipeline aesthetic — free to
-  describe and reproduce.
-- **Do NOT** generate or clone specific copyrighted characters, mascots, or
-  brand assets (e.g. named cartoon franchises). Apply the look only to
-  **original, owned, or clearly non-copyrighted subjects**.
-- This skill references the *era/technique* of early-2000s low-budget 3D
-  animation, not any particular copyrighted title.
+- 低面数、逐面色块、简陋塑料材质；避免精致 PBR、真实反射和电影级光照。
+- 比例略失调，允许轻微穿插、僵硬绑定和重复资产，但主体必须可辨认。
+- 使用单一硬方向光和轮廓清楚的硬阴影。
+- 使用明亮但略旧的平涂颜色；不要用暗黑、脏噪点替代廉价 CGI 感。
+- 保留用户原图的核心主体、数量、方向和关键位置，除非用户要求重新构图。
 
-## When to use
+不同产物只验证适用信号。角色图不要求出现水面、砖墙或天空；场景图不要求角色表情缺陷。
 
-- User says "牛来化", "做成牛来风格", or wants a bargain-bin cheap-CGI 3D look.
-- Restyling a map, illustration, character sprite, or UI into flat-shaded
-  low-poly cheap 3D.
-- Applying the look to the `pixel-city-walk` engine (map / UI / character /
-  postcard) or any similar 2D-canvas game.
+## 工具选择
 
-## Core aesthetic (the non-negotiable "破味" signals)
+- 不假设固定的图片参数、输出尺寸、操作系统或本地软件。先查看当前工具说明和实际输出。
+- 支持参考图编辑时直接编辑参考图；不支持时，把构图拆成编号位置锚点后文生图。
+- 需要透明背景时优先请求透明输出。工具不支持透明输出时再使用纯色背景，并说明需要后续抠图。
+- 使用当前环境已有的可靠工具做裁切和缩放；保持比例，禁止为了凑尺寸直接拉伸主体。
+- 保留平台要求的 AI 内容标识。不要用遮挡、裁切或修补方式规避平台水印。
 
-If any of these are missing, the result falls back to *clean low-poly* and is
-**not** 牛来. Read `references/style-system.md` for full detail and the named
-presets.
+## 失败回退
 
-1. **Flat shading, one solid color per face** — NO gradient, NO specular, NO
-   smooth shading, NO PBR, NO normal maps, NO reflections, NO ambient occlusion.
-2. **NO anti-aliasing** — polygon edges are jagged and stepped.
-3. **Water is a flat colored sheet** — NO transparency, NO ripples, NO specular
-   highlights. A lake is just a flat colored rectangle.
-4. **Countable 16×16 tiled textures** on walls — you can literally COUNT the
-   repeating bricks.
-5. **Single hard directional light** (upper-right) casting **solid black blob
-   shadows** — no soft penumbra.
-6. **Broken proportions, visible clipping / poke-through, reused stock assets.**
-7. **Bright flat pastel plastic colors** (cobalt blue, faded brick red, ochre,
-   pale teal, peachy beige); flat pale-grey sky band with NO gradient.
+- **过于精致**：减少 PBR、反射、柔光和材质细节，加强逐面色块、硬阴影和比例瑕疵。
+- **主体或构图漂移**：回到参考图编辑；否则明确主体数量，并用“左上/中央/右下”等位置锚点。
+- **画面太乱**：减少道具和文字，只保留一个主体、一个动作、一个背景层次。
+- **文字乱码**：生成无字底图，文字交给排版工具后置添加；不要反复让图像模型重画中文。
+- **不符合小红书比例**：重新按 `references/xiaohongshu.md` 的画布和安全区生成，不要拉伸旧图。
 
-## Workflow
+## 知识产权边界
 
-1. Pick a preset: `sunlit_game_map` (architecture / city maps / scenes) or
-   `character` (figures). See `references/style-system.md`.
-2. Use the battle-tested ImageGen prompts in `references/prompt-blueprint.md`.
-   **Critical tool note:** image-to-image is currently unreliable in this
-   environment (the `image` param rejects arrays even when correctly formed) —
-   prefer **text-to-image with layout locked via numbered `(a)(b)(c)` positional
-   anchors**. See the "Tool environment" section there.
-3. For character sprites: generate on a pure `#00ff00` green screen, then key it
-   to transparent in-engine (see the pixel-city-walk case).
-4. Remove the ImageGen "AI生成 WORKBUDDY" corner watermark with `ffmpeg
-   drawbox` (see `references/prompt-blueprint.md`).
-5. Resize / normalize with `sips` (macOS) — there is no ImageMagick and ffmpeg
-   lacks `posterize`.
-
-## pixel-city-walk case study
-
-`references/pixel-city-walk-case.md` documents the four-block 牛来化 (map / UI /
-character / postcard), the `uiMode` isolation pattern, the TDZ white-screen
-gotcha, green-screen sprite + `npc.scale`, and postcard-scene generation.
-
-## Quality bar
-
-Reject outputs that are too clean, too coordinated, or that achieve cheapness
-through post-filters (pixelation / blur / VHS / heavy noise). The result should
-look like a **first unpolished render keyframe before any cleanup pass**, made
-by a poor studio.
+描述通用制作技术和时代质感，不要求模仿具体作品或在世艺术家。不要克隆受版权保护的角色、吉祥物、商标或品牌资产；只处理原创、自有或已获授权的主体。
